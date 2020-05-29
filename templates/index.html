@@ -11,14 +11,7 @@
     const ethereumButton = document.getElementById('reg');
 
     ethereumButton.addEventListener('click', () => {
-
+        ethereum.enable();
     });
-
-    async function getAccount() {
-      const accounts = await ethereum.enable();
-      const account = accounts[0];
-      showAccount.innerHTML = account;
-    }
-
 
 {% endblock %}

@@ -15,3 +15,7 @@ def contacts(request):
 
 def login(request):
     return render(request, 'login.html')
+
+
+def faq(request):
+    return render(request, 'fuck u')
