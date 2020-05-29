@@ -2,4 +2,23 @@
 
 {% block content %}
 
+    {% include 'login.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+
+    const ethereumButton = document.getElementById('reg');
+
+    ethereumButton.addEventListener('click', () => {
+
+    });
+
+    async function getAccount() {
+      const accounts = await ethereum.enable();
+      const account = accounts[0];
+      showAccount.innerHTML = account;
+    }
+
+
 {% endblock %}

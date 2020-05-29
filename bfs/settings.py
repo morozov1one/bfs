@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bfs_app'
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,13 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
+
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "bfs_app.auth.AuthenticationEmailBackend",
+)
+
+AUTH_USER_MODEL = 'bfs_app.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {

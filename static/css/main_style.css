@@ -1,0 +1,5 @@
+body {
+    background:  linear-gradient(to top, transparent 50%, #4d82cc, #785DD6) no-repeat,
+    url("../images/bg.jpeg") no-repeat bottom center;
+    background-size: cover;
+}
