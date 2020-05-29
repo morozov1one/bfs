@@ -98,16 +98,12 @@ contract Money_Oracle is usingProvable {
     
     function stringToUint(string memory s) private returns (uint64) {
         bytes memory b = bytes(s);
-        uint64 i;
         uint64 result = 0;
-        /*
-        for (i = 0; i < b.length; i++) {
-            uint64 c = uint64(b[i]);
-            if (c >= 48 && c <= 57) {
-                result = result * 10 + (c - 48);
+        for (uint8 i = 0; i < b.length; i++) {
+            if (uint8(b[i]) >= 48 && uint8(b[i]) <= 57) {
+                result = result * 10 + (uint8(b[i]) - 48);
             }
         }
-        */
         return result;
     }
     
@@ -123,9 +119,10 @@ contract Money_Oracle is usingProvable {
        }
    }
    
-   function getPrice() public payable returns(uint64) {
+   function getPrice() public returns(uint64) {
         uint64 eth_usd = 0;
         while (eth_usd == 0) {
+            emit ConstructorInitiated("ИТЕРАЦИЯ");
             eth_usd = updatePrice();
         }
         return user_price * 1000000000000000000 / eth_usd;
@@ -160,6 +157,11 @@ contract User is Main {
         Transfer_money tm = new Transfer_money();
         tm.send(bfs_wallet);
         subs_days += (s_months * 30);
+    }
+    
+    function getPrice() public returns(uint64) {
+        Money_Oracle mo = new Money_Oracle();
+        return mo.getPrice();
     }
 }
 
