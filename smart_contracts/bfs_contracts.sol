@@ -1,11 +1,49 @@
 pragma solidity >=0.6.0 <= 0.6.8;
 
-import "github.com/provable-things/ethereum-api/blob/master/provableAPI_0.6.sol";
+contract Transfer_money {
+    function send(address payable recipient) external payable {
+        recipient.transfer(msg.value);
+    }
+}
+
+contract Admin {
+    address private owner;
+    
+    event ConstructorInitiated(string nextStep);
+    
+    uint64[4] private prices; //цены на профили
+    
+    constructor () public {
+        emit ConstructorInitiated("Вызван конструктор Admin");
+        owner = msg.sender;
+    }
+    
+    function getOwner() external view returns (address) {
+        return owner;
+    }
+    
+    function setPrice(uint8 profile, uint64 price) public {
+        require(msg.sender == owner);
+        prices[profile] = price;
+    }
+    
+    function getPrice(uint8 profile) external view returns(uint64) {
+        return prices[profile];
+    }
+}
 
 contract Main {
     address private owner;
     address payable constant bfs_wallet = 0x0da52A47b11fFFefEf609E41FCF956b52ca9a2Ef;
-    //private uint32 user_id;
+    
+    uint64[4] public subs_days; // сколько дней подписки осталось
+    uint256[4] public last_upd; // последнее обновление
+    
+    User user;
+    Banker banker;
+    Business business;
+    Investor investor;
+    Transfer_money tm;
     
     event ConstructorInitiated(string nextStep);
     event Deposit(address _sender, uint amount);
@@ -14,13 +52,41 @@ contract Main {
     constructor () public {
         emit ConstructorInitiated("Вызван конструктор Main");
         owner = msg.sender;
-        //uder_id = id;
+        subs_days[0] = 0; //Обычный пользователь
+        subs_days[1] = 0; //Банкир
+        subs_days[2] = 0; //Предприятие
+        subs_days[3] = 0; //Инвестор
+        last_upd[0] = now; //Обычный пользователь
+        last_upd[1] = now; //Банкир
+        last_upd[2] = now; //Предприятие
+        last_upd[3] = now; //Инвестор
+        user = new User();
+        banker = new Banker();
+        business = new Business();
+        investor = new Investor();
+        tm = new Transfer_money();
     }
     
     function getOwner() external view returns (address) {
         return owner;
     }
-    
+
+    function delDays(uint8 profile) private returns(uint256) {
+        subs_days[profile] -= uint64((now - last_upd[profile]) / 86400);
+        if (subs_days[profile] < 0)
+            subs_days[profile] = 0;
+    }
+
+    function addDays(uint64 s_months, uint8 profile) public payable {
+        Admin admin = Admin(bfs_wallet);
+        uint64 price = s_months * admin.getPrice(profile);
+        require(msg.value >= price);
+        emit Withdraw(owner, price, bfs_wallet);
+        tm.send(bfs_wallet);
+        delDays(profile);
+        subs_days[profile] += (s_months * 30);
+        last_upd[profile] = now;
+    }
     
     /*
     function() {
@@ -72,107 +138,34 @@ contract Main {
 	*/
 }
 
-contract Money_Oracle is usingProvable {
-    //В текущий версии цена на день подписки устанавливается жёстко (прямо тут), в долларах
-    uint64 constant user_price = 1; //Обычный пользователь
-    uint64 constant banker_price = 10; //Банкир
-    uint64 constant business_price = 50; //Предприятие
-    uint64 constant investor_price = 2; //Инвестор
-    
-    string public ETHUSD;
-    
-    event ConstructorInitiated(string nextStep);
-    event PriceUpdated(string price);
-    event NewProvableQuery(string description);
-    
-    constructor() public payable {
-        emit ConstructorInitiated("Вызван конструктор Money_Oracle");
-    }
-    
-    function callback(bytes32 myid, string memory result) public {
-        if (msg.sender != provable_cbAddress()) 
-            revert();
-        ETHUSD = result;
-        PriceUpdated(result);
-    }
-    
-    function stringToUint(string memory s) private returns (uint64) {
-        bytes memory b = bytes(s);
-        uint64 result = 0;
-        for (uint8 i = 0; i < b.length; i++) {
-            if (uint8(b[i]) >= 48 && uint8(b[i]) <= 57) {
-                result = result * 10 + (uint8(b[i]) - 48);
-            }
-        }
-        return result;
-    }
-    
-    function updatePrice() public payable returns(uint64) {
-       if (provable_getPrice("URL") > address(this).balance) {
-           NewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
-           return 0;
-       } 
-       else {
-           NewProvableQuery("Provable query was sent, standing by for the answer..");
-           provable_query("URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price");
-           return stringToUint(ETHUSD);
-       }
-   }
-   
-   function getPrice() public returns(uint64) {
-        uint64 eth_usd = 0;
-        while (eth_usd == 0) {
-            emit ConstructorInitiated("ИТЕРАЦИЯ");
-            eth_usd = updatePrice();
-        }
-        return user_price * 1000000000000000000 / eth_usd;
-   }
-}
-
-contract Transfer_money {
-    function send(address payable recipient) external payable {
-        recipient.transfer(msg.value);
-    }
-}
-
-contract User is Main {
+contract User {
     address private owner;
-    uint64 private subs_days; // сколько дней подписки осталось
     
-    event ConstructorInitiated(string nextStep);
-    event Deposit(address _sender, uint amount);
-	event Withdraw(address _sender, uint amount, address recipient);
-    
-    constructor (uint32 s_days) public {
-        emit ConstructorInitiated("Вызван конструктор User");
+    constructor () public {
         owner = msg.sender;
-        subs_days = s_days;
-    }
-    
-    function addDays(uint64 s_months) public payable {
-        Money_Oracle mo = new Money_Oracle();
-        uint64 price = s_months * mo.getPrice();
-        require(msg.value >= price);
-        emit Withdraw(owner, price, bfs_wallet);
-        Transfer_money tm = new Transfer_money();
-        tm.send(bfs_wallet);
-        subs_days += (s_months * 30);
-    }
-    
-    function getPrice() public returns(uint64) {
-        Money_Oracle mo = new Money_Oracle();
-        return mo.getPrice();
     }
 }
 
 contract Banker {
+    address private owner;
     
+    constructor () public {
+        owner = msg.sender;
+    }
 }
 
 contract Business {
+    address private owner;
     
+    constructor () public {
+        owner = msg.sender;
+    }
 }
 
 contract Investor {
+    address private owner;
     
+    constructor () public {
+        owner = msg.sender;
+    }
 }
