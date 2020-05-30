@@ -8,25 +8,25 @@ contract Transfer_money {
 
 contract Admin {
     address private owner;
-    
+
     event ConstructorInitiated(string nextStep);
-    
+
     uint64[4] private prices; //цены на профили
-    
+
     constructor () public {
         emit ConstructorInitiated("Вызван конструктор Admin");
         owner = msg.sender;
     }
-    
+
     function getOwner() external view returns (address) {
         return owner;
     }
-    
+
     function setPrice(uint8 profile, uint64 price) public {
         require(msg.sender == owner);
         prices[profile] = price;
     }
-    
+
     function getPrice(uint8 profile) external view returns(uint64) {
         return prices[profile];
     }
@@ -35,20 +35,20 @@ contract Admin {
 contract Main {
     address private owner;
     address payable constant bfs_wallet = 0x0da52A47b11fFFefEf609E41FCF956b52ca9a2Ef;
-    
+
     uint64[4] public subs_days; // сколько дней подписки осталось
     uint256[4] public last_upd; // последнее обновление
-    
+
     User user;
     Banker banker;
     Business business;
     Investor investor;
     Transfer_money tm;
-    
+
     event ConstructorInitiated(string nextStep);
     event Deposit(address _sender, uint amount);
 	event Withdraw(address _sender, uint amount, address recipient);
-    
+
     constructor () public {
         emit ConstructorInitiated("Вызван конструктор Main");
         owner = msg.sender;
@@ -66,7 +66,7 @@ contract Main {
         investor = new Investor();
         tm = new Transfer_money();
     }
-    
+
     function getOwner() external view returns (address) {
         return owner;
     }
@@ -75,6 +75,7 @@ contract Main {
         subs_days[profile] -= uint64((now - last_upd[profile]) / 86400);
         if (subs_days[profile] < 0)
             subs_days[profile] = 0;
+        return subs_days;
     }
 
     function addDays(uint64 s_months, uint8 profile) public payable {
@@ -87,7 +88,7 @@ contract Main {
         subs_days[profile] += (s_months * 30);
         last_upd[profile] = now;
     }
-    
+
     /*
     function() {
         require(isAllowedToSend(msg.sender));
@@ -140,7 +141,7 @@ contract Main {
 
 contract User {
     address private owner;
-    
+
     constructor () public {
         owner = msg.sender;
     }
@@ -148,7 +149,7 @@ contract User {
 
 contract Banker {
     address private owner;
-    
+
     constructor () public {
         owner = msg.sender;
     }
@@ -156,7 +157,7 @@ contract Banker {
 
 contract Business {
     address private owner;
-    
+
     constructor () public {
         owner = msg.sender;
     }
@@ -164,7 +165,7 @@ contract Business {
 
 contract Investor {
     address private owner;
-    
+
     constructor () public {
         owner = msg.sender;
     }

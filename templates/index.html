@@ -8,10 +8,12 @@
 
 {% block scripts %}
 
-    const ethereumButton = document.getElementById('reg');
+    <script>
+        const ethereumButton = document.getElementById('reg');
 
-    ethereumButton.addEventListener('click', () => {
-        ethereum.enable();
-    });
+        ethereumButton.addEventListener('click', () => {
+            ethereum.enable();
+        });
+    </script>
 
 {% endblock %}

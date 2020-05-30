@@ -1,2 +1,4 @@
 ,idea/
 /venv/
+private_key
+infura_api_token
