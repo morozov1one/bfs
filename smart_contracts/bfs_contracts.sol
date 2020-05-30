@@ -36,8 +36,8 @@ contract Main {
     address private owner;
     address payable constant bfs_wallet = 0x0da52A47b11fFFefEf609E41FCF956b52ca9a2Ef;
     
-    uint64[4] public subs_days; // сколько дней подписки осталось
-    uint256[4] public last_upd; // последнее обновление
+    uint64[4] private subs_days; // сколько дней подписки осталось
+    uint256[4] private last_upd; // последнее обновление
     
     User user;
     Banker banker;
@@ -70,15 +70,19 @@ contract Main {
     function getOwner() external view returns (address) {
         return owner;
     }
+    
+    function getDays(uint8 profile) public returns(uint64) {
+        return subs_days[profile];
+    }
 
-    function delDays(uint8 profile) private returns(uint256) {
+    function delDays(uint8 profile) public returns(uint256) {
         subs_days[profile] -= uint64((now - last_upd[profile]) / 86400);
         if (subs_days[profile] < 0)
             subs_days[profile] = 0;
     }
 
     function addDays(uint64 s_months, uint8 profile) public payable {
-        Admin admin = Admin(bfs_wallet);
+        Admin admin = Admin(bfs_wallet); // ЗДЕСЬ ЧТО-ТО НЕ ТО!!!
         uint64 price = s_months * admin.getPrice(profile);
         require(msg.value >= price);
         emit Withdraw(owner, price, bfs_wallet);
@@ -88,7 +92,9 @@ contract Main {
         last_upd[profile] = now;
     }
     
-    /*
+    
+    
+     /*
     function() {
         require(isAllowedToSend(msg.sender));
 		Deposit(msg.sender, msg.value);
@@ -140,32 +146,124 @@ contract Main {
 
 contract User {
     address private owner;
+    Transfer_money tm;
     
     constructor () public {
         owner = msg.sender;
+        tm = new Transfer_money();
     }
+    
+    function checkUser() public returns(bool) {
+        Main u = Main(msg.sender);
+        u.delDays(0);
+        return (u.getDays(0) > 0);
+    }
+    
+    function sendMoney(address payable recipient) public payable {
+        require(checkUser());
+        tm.send(recipient);
+    }
+    
+    
 }
 
 contract Banker {
     address private owner;
+    Transfer_money tm;
+    
+    struct debt {
+        uint256 value; //Значение долга
+        uint64 term; //За сколько дней отдать нужно
+        uint256 last_pay; //Когда платил в последний раз
+    }
+    
+    struct deposit {
+        bool open;
+        uint256 value;
+        uint8 percent;
+        uint16 term; //Раз в сколько дней начисляются проценты
+        uint256 last_upd; //Когда последний раз начислялись проценты
+    }
+    
+    mapping(address => deposit) private deposits;
+    mapping(address => debt) private credits;
     
     constructor () public {
         owner = msg.sender;
+        tm = new Transfer_money();
+    }
+    
+    function checkUser() public returns(bool) {
+        Main u = Main(msg.sender);
+        u.delDays(0);
+        return (u.getDays(0) > 0);
+    }
+    
+    function getDeposit(address client, uint8 percent, uint16 term) public {
+        require(msg.sender == owner);
+        require(term > 0);
+        deposits[client].open = true;
+        deposits[client].last_upd = now;
+        deposits[client].percent = percent;
+        deposits[client].term = term;
+    }
+    
+    function getPercents() public {
+        require(checkUser());
+        require(deposits[msg.sender].open == true);
+        uint16 count = uint16((now - deposits[msg.sender].last_upd) / 86400 / deposits[msg.sender].term);
+        for (uint16 i = 0; i < count; ++i)
+            deposits[msg.sender].value += (deposits[msg.sender].value * deposits[msg.sender].percent / 100);
+        deposits[msg.sender].last_upd = now;
+    }
+    
+    function setDeposit() public payable {
+        require(checkUser());
+        require(deposits[msg.sender].open == true);
+        getPercents();
+        deposits[msg.sender].value += msg.value;
+    }
+    
+    function getCredit(address client, uint256 value, uint64 term) public {
+        require(credits[client].value == 0);
+        credits[client].value = value;
+        credits[client].term = term;
+        credits[client].last_pay = now;
+    }
+    
+    function payCredit() public {
+        require(checkUser());
+        /*
+        TO DO
+        */
+    }
+    
+    function checkCredits() public {
+        require(msg.sender == owner);
+        /*
+        TO DO
+        */
     }
 }
 
 contract Business {
     address private owner;
+    Transfer_money tm;
     
     constructor () public {
         owner = msg.sender;
+        tm = new Transfer_money();
     }
+    
+    
 }
 
 contract Investor {
     address private owner;
+    Transfer_money tm;
     
     constructor () public {
         owner = msg.sender;
+        tm = new Transfer_money();
     }
 }
