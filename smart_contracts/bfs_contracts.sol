@@ -71,7 +71,7 @@ contract Main {
         return owner;
     }
     
-    function getDays(uint8 profile) public returns(uint64) {
+    function getDays(uint8 profile) public view returns(uint64) {
         return subs_days[profile];
     }
 
@@ -91,57 +91,6 @@ contract Main {
         subs_days[profile] += (s_months * 30);
         last_upd[profile] = now;
     }
-    
-    
-    
-     /*
-    function() {
-        require(isAllowedToSend(msg.sender));
-		Deposit(msg.sender, msg.value);
-	}
-	
-	function sendFunds(uint amount, address receiver) returns (uint) {
-		if(isAllowedToSend(msg.sender)) {
-			if(this.balance >= amount) {
-				if(!receiver.send(amount)) {
-					throw;
-				}
-				Withdraw(msg.sender, amount, receiver);
-				// log each withdrawl, receiver, amount
-				isAllowedToSendFundsMapping[msg.sender].amount_sends++;
-				isAllowedToSendFundsMapping[msg.sender].withdrawls[isAllowedToSendFundsMapping[msg.sender].amount_sends].to = receiver;
-				isAllowedToSendFundsMapping[msg.sender].withdrawls[isAllowedToSendFundsMapping[msg.sender].amount_sends].amount = amount;
-				return this.balance;
-			}
-		}
-	}
-
-	// Allowed to send funds when the boolean mapping is set to true
-	function allowAddressToSendMoney(address _address) {
-		if(msg.sender == owner) {
-			isAllowedToSendFundsMapping[_address].allowed = true;
-		}
-	}
-
-	// Not allowed to send funds when the boolean mapping is set to false
-	function disallowAddressToSendMoney(address _address) {
-		if(msg.sender == owner) {
-			isAllowedToSendFundsMapping[_address].allowed = false;
-		}
-	}
-
-	// Check function which returns the boolean value
-	function isAllowedToSend(address _address) constant returns (bool) {
-		return isAllowedToSendFundsMapping[_address].allowed || _address == owner;
-	}
-
-	// check to make sure the msg.sender is the owner or it will suicide the contract and return funds to the owner
-	function killWallet() {
-		if(msg.sender == owner) {
-			suicide(owner);
-		}
-	}
-	*/
 }
 
 contract User {
@@ -163,8 +112,6 @@ contract User {
         require(checkUser());
         tm.send(recipient);
     }
-    
-    
 }
 
 contract Banker {
@@ -173,6 +120,7 @@ contract Banker {
     
     struct debt {
         uint256 value; //Значение долга
+        uint8 percent; //"Штрафные" проценты
         uint64 term; //За сколько дней отдать нужно
         uint256 last_pay; //Когда платил в последний раз
     }
@@ -185,8 +133,10 @@ contract Banker {
         uint256 last_upd; //Когда последний раз начислялись проценты
     }
     
+    address[] private list_of_credits;
     mapping(address => deposit) private deposits;
     mapping(address => debt) private credits;
+    mapping(address => debt) private ask_credits;
     
     constructor () public {
         owner = msg.sender;
@@ -224,27 +174,59 @@ contract Banker {
         deposits[msg.sender].value += msg.value;
     }
     
-    function getCredit(address client, uint256 value, uint64 term) public {
-        require(credits[client].value == 0);
-        credits[client].value = value;
-        credits[client].term = term;
-        credits[client].last_pay = now;
+    function askCredit(uint256 value, uint8 percent, uint64 term) public {
+        require(checkUser());
+        require(credits[msg.sender].value == 0);
+        ask_credits[msg.sender].value = value;
+        ask_credits[msg.sender].percent = percent;
+        ask_credits[msg.sender].term = term;
     }
     
-    function payCredit() public {
-        require(checkUser());
-        /*
-        TO DO
-        */
+    function getCredit(address client, uint256 value, uint8 percent, uint64 term) public {
+        require(msg.sender == owner);
+        require(ask_credits[client].value == value);
+        require(ask_credits[client].percent == percent);
+        require(ask_credits[client].term == term);
+        credits[client].value = value;
+        credits[client].percent = percent;
+        credits[client].term = term;
+        credits[client].last_pay = now;
+        list_of_credits.push(client);
+    }
+    
+    function checkOneCredit(address client) public {
+        require(credits[client].value > 0);
+        uint16 count = uint16((now - credits[client].last_pay) / 86400 / credits[client].term);
+        for (uint16 j = 0; j < count; ++j)
+            credits[client].value += (credits[client].value * credits[client].percent / 100);
+        credits[client].last_pay = now;
     }
     
     function checkCredits() public {
         require(msg.sender == owner);
-        /*
-        TO DO
-        */
+        for (uint16 i = 0; i < list_of_credits.length; ++i)
+            checkOneCredit(list_of_credits[i]);
     }
+    
+    function payCredit() public payable {
+        require(checkUser());
+        checkOneCredit(msg.sender);
+        require(msg.value >= credits[msg.sender].value);
+        credits[msg.sender].value = 0;
+    }
+    
+    
 }
+
+
+/*
+Реализацию контрактов для бизнеса и инвесторов 
+невозможно написать в рамках учебного проекта,
+так как мы не можем сделать выпуск ценных бумаг.
+
+Этот функционал можно воспринимать как
+перспективы развития проекта.
+*/
 
 contract Business {
     address private owner;
@@ -254,8 +236,6 @@ contract Business {
         owner = msg.sender;
         tm = new Transfer_money();
     }
-    
-    
 }
 
 contract Investor {
