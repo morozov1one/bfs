@@ -11,7 +11,7 @@ contract Transfer_money {
 contract Main {
     address private owner;
     address payable constant bfs_wallet = 0x0da52A47b11fFFefEf609E41FCF956b52ca9a2Ef;
-    address constant admin_address = 0x4F9A5F5b62dF60Be95a92f0aD2fC0c82f5E1287F;
+    address constant admin_address = 0x3b1C4370D52692dFfbe0cFC9C2cc0935b0d0f747;
     
     uint64[4] private subs_days; // сколько дней подписки осталось
     uint256[4] private last_upd; // последнее обновление
@@ -139,7 +139,7 @@ contract User {
 
 contract Banker {
     address private owner;
-    address constant admin_address = 0x4F9A5F5b62dF60Be95a92f0aD2fC0c82f5E1287F;
+    address constant admin_address = 0x3b1C4370D52692dFfbe0cFC9C2cc0935b0d0f747;
     address main_address;
     Transfer_money tm;
     
