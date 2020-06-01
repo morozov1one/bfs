@@ -1,6 +1,6 @@
 pragma solidity >=0.6.0 <= 0.6.8;
 
-import 'Admin.sol';
+import 'https://github.com/morozov1one/bfs/blob/dev_sol/smart_contracts/Admin.sol';
 
 contract Transfer_money {
     function send(address payable recipient) external payable {
@@ -11,7 +11,7 @@ contract Transfer_money {
 contract Main {
     address private owner;
     address payable constant bfs_wallet = 0x0da52A47b11fFFefEf609E41FCF956b52ca9a2Ef;
-    address constant admin_address = 0x0000000000000000000000000000000000000000;
+    address constant admin_address = 0x4F9A5F5b62dF60Be95a92f0aD2fC0c82f5E1287F;
     
     uint64[4] private subs_days; // сколько дней подписки осталось
     uint256[4] private last_upd; // последнее обновление
@@ -139,7 +139,7 @@ contract User {
 
 contract Banker {
     address private owner;
-    address constant admin_address = 0x0000000000000000000000000000000000000000;
+    address constant admin_address = 0x4F9A5F5b62dF60Be95a92f0aD2fC0c82f5E1287F;
     address main_address;
     Transfer_money tm;
     
