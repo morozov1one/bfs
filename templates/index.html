@@ -12,7 +12,25 @@
         const ethereumButton = document.getElementById('reg');
 
         ethereumButton.addEventListener('click', () => {
-            ethereum.enable();
+            if (typeof web3 == 'undefined') {
+                alert('Для работы с сервисом Вам необходимо установить плагин MetaMask!(доступно в Google Chrome и Firefox)');
+            } else {
+                if (document.getElementById('username').value && document.getElementById('email').value) {
+                    ethereum.enable();
+                    console.log('{{ csrf_token }}');
+                    const request = new XMLHttpRequest();
+                    const data = new FormData(document.getElementById('form'));
+                    data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    data.append('wallet', web3.eth.accounts[0]);
+                    request.open('POST', '/new_user', true);
+                    request.send(data);
+                    location.reload();
+                    return false;
+                }
+                else {
+                    alert('Заполните форму!');
+                }
+            }
         });
     </script>
 
