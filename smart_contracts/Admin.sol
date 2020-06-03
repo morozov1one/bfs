@@ -42,10 +42,10 @@ contract Admin {
     }
     
     function checkUser(address wallet, address user_contract) external view returns(bool) {
-        return (users[wallet] == users[user_contract]);
+        return !(users[wallet] == users[user_contract]);
     }
     
     function checkUser(address wallet) external view returns(bool) {
-        return users0[wallet];
+        return !users0[wallet];
     }
 }
