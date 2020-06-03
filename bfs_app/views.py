@@ -12,7 +12,7 @@ def get_transaction_params(web3):
     return {
         'chainId': 5,
         'gas': 4000000,
-        'gasPrice': web3.eth.gasPrice,
+        'gasPrice': 25000000,
         'nonce': web3.eth.getTransactionCount(web3.eth.account, 'pending'),
     }
 
@@ -50,6 +50,7 @@ def new_user(request):
                     open('solidity/tokens/infura', 'r') as infura:
                 abi = abi.read()
                 admin_abi = admin_abi.read()
+                admin_private_key = admin.read()
 
                 web3 = Web3(Web3.HTTPProvider('https://goerli.infura.io/v3/' + infura.read()))
 
@@ -64,12 +65,9 @@ def new_user(request):
                     Deploy Main contract
                 """
                 tmp_contract = web3.eth.contract(abi=abi, bytecode=bytecode.read())
-                print(web3.eth.gasPrice)
-                print(web3.eth.gasPrice * 300000 / 10**18)
                 txn = tmp_contract.constructor().buildTransaction(get_transaction_params(web3))
                 txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
                 main_contract_address = web3.eth.waitForTransactionReceipt(txn_hash)['contractAddress']
-                print(main_contract_address)
 
                 """
                     Call createProfile() function from Main contract
@@ -81,17 +79,18 @@ def new_user(request):
                 """
                     Send 2 overridden setUserAddress() functions of Admin contract
                 """
-                web3.eth.account = eth.Account.privateKeyToAccount(private_key=admin.read()).address
+                web3.eth.account = eth.Account.privateKeyToAccount(private_key=admin_private_key).address
                 tmp_contract = web3.eth.contract(abi=admin_abi, address=os.environ['ADMIN_CONTRACT_ADDRESS'])
-                txn1 = tmp_contract.functions.setUserAddress(web3.eth.account).buildTransaction(get_transaction_params(web3))
-                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn1, private_key).rawTransaction)
-                txn2 = tmp_contract.functions.setUserAddress(web3.eth.account, main_contract_address).buildTransaction(get_transaction_params(web3))
-                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn2, private_key).rawTransaction)
+                txn1 = tmp_contract.functions.setUserAddress(web3.eth.account).buildTransaction(
+                    get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn1, admin_private_key).rawTransaction)
+                txn2 = tmp_contract.functions.setUserAddress(web3.eth.account, main_contract_address).buildTransaction(
+                    get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn2, admin_private_key).rawTransaction)
 
                 """
                     Create new User object
                 """
-                '''
                 user = User.objects.create_user(username=username,
                                                 email=email,
                                                 password=password,
@@ -99,5 +98,4 @@ def new_user(request):
                                                 main_contract_address=main_contract_address)
                 user.save()
                 login(request, authenticate(username=username, email=email, password=password))
-                '''
     return redirect('/')
