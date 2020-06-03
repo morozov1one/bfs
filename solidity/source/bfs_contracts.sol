@@ -1,6 +1,6 @@
 pragma solidity >=0.6.0 <= 0.6.8;
 
-import 'https://github.com/morozov1one/bfs/blob/master/solidity/Admin.sol';
+import "github.com/morozov1one/bfs/blob/master/solidity/Admin.sol";
 
 contract Transfer_money {
     function send(address payable recipient) external payable {
@@ -29,7 +29,7 @@ contract Main {
     constructor () public {
         emit ConstructorInitiated("Вызван конструктор Main");
         Admin admin = Admin(admin_address);
-        require(admin.checkUser(msg.sender));
+        require(!admin.checkUser(msg.sender));
         owner = msg.sender;
         subs_days[0] = 0; //Обычный пользователь
         subs_days[1] = 0; //Банкир
@@ -195,7 +195,7 @@ contract Banker {
 
     function setDeposit(address user) external payable {
         Admin admin = Admin(admin_address);
-        require(admin.checkUser(msg.sender, user));
+        require(!admin.checkUser(msg.sender, user));
         require(deposits[msg.sender].open == true);
         getPercents();
         deposits[msg.sender].value += msg.value;
@@ -203,7 +203,7 @@ contract Banker {
 
     function askCredit(address user, uint256 value, uint8 percent, uint64 term) external {
         Admin admin = Admin(admin_address);
-        require(admin.checkUser(msg.sender, user));
+        require(!admin.checkUser(msg.sender, user));
         require(credits[msg.sender].value == 0);
         ask_credits[msg.sender].value = value;
         ask_credits[msg.sender].percent = percent;
@@ -240,7 +240,7 @@ contract Banker {
 
     function payCredit(address user) external payable {
         Admin admin = Admin(admin_address);
-        require(admin.checkUser(msg.sender, user));
+        require(!admin.checkUser(msg.sender, user));
         checkOneCredit(msg.sender);
         require(msg.value >= credits[msg.sender].value);
         credits[msg.sender].value = 0;

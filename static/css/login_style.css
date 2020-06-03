@@ -4,7 +4,7 @@ form {
 }
 
 .login-box {
-    margin-top: 75px;
+    margin-top: 10px;
     height: auto;
     background: #1A2226;
     text-align: center;
@@ -74,7 +74,7 @@ input[type=password] {
 }
 
 .form-group {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     outline: 0px;
 }
 

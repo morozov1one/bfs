@@ -2,7 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-from start_thread import start_thread
+from infinite_loop_thread import start_thread, stop_thread
+from bfs.settings import DEBUG
 
 
 def main():
@@ -19,5 +20,8 @@ def main():
 
 
 if __name__ == '__main__':
-    start_thread()
+    if not DEBUG:
+        start_thread()
     main()
+    if not DEBUG:
+        stop_thread()

@@ -2,15 +2,20 @@
 
 {% block content %}
 
-    {% include 'login.html' %}
+    {% if not user.is_authenticated %}
+        {% include 'login.html' %}
+    {% else %}
+        <h1>Welcome, {{ user.username }}</h1>
+    {% endif %}
+
 
 {% endblock %}
 
 {% block scripts %}
 
     <script>
+        /*
         const ethereumButton = document.getElementById('reg');
-
         ethereumButton.addEventListener('click', () => {
             if (typeof web3 == 'undefined') {
                 alert('Для работы с сервисом Вам необходимо установить плагин MetaMask!(доступно в Google Chrome и Firefox)');
@@ -24,7 +29,6 @@
                     data.append('wallet', web3.eth.accounts[0]);
                     request.open('POST', '/new_user', true);
                     request.send(data);
-                    location.reload();
                     return false;
                 }
                 else {
@@ -32,6 +36,7 @@
                 }
             }
         });
+        */
     </script>
 
 {% endblock %}
