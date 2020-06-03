@@ -11,7 +11,7 @@ import os
 def get_transaction_params(web3):
     return {
         'chainId': 5,
-        'gas': 800000,
+        'gas': 4000000,
         'gasPrice': web3.eth.gasPrice,
         'nonce': web3.eth.getTransactionCount(web3.eth.account, 'pending'),
     }
@@ -46,6 +46,7 @@ def new_user(request):
             with open('solidity/abi/bfs_contracts_sol_Main.abi', 'r') as abi, \
                     open('solidity/bin/bfs_contracts_sol_Main.bin', 'r') as bytecode, \
                     open('solidity/abi/bfs_contracts_sol_Admin.abi', 'r') as admin_abi, \
+                    open('solidity/tokens/private_key', 'r') as admin, \
                     open('solidity/tokens/infura', 'r') as infura:
                 abi = abi.read()
                 admin_abi = admin_abi.read()
@@ -63,9 +64,12 @@ def new_user(request):
                     Deploy Main contract
                 """
                 tmp_contract = web3.eth.contract(abi=abi, bytecode=bytecode.read())
+                print(web3.eth.gasPrice)
+                print(web3.eth.gasPrice * 300000 / 10**18)
                 txn = tmp_contract.constructor().buildTransaction(get_transaction_params(web3))
                 txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
                 main_contract_address = web3.eth.waitForTransactionReceipt(txn_hash)['contractAddress']
+                print(main_contract_address)
 
                 """
                     Call createProfile() function from Main contract
@@ -77,7 +81,7 @@ def new_user(request):
                 """
                     Send 2 overridden setUserAddress() functions of Admin contract
                 """
-
+                web3.eth.account = eth.Account.privateKeyToAccount(private_key=admin.read()).address
                 tmp_contract = web3.eth.contract(abi=admin_abi, address=os.environ['ADMIN_CONTRACT_ADDRESS'])
                 txn1 = tmp_contract.functions.setUserAddress(web3.eth.account).buildTransaction(get_transaction_params(web3))
                 web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn1, private_key).rawTransaction)
@@ -87,6 +91,7 @@ def new_user(request):
                 """
                     Create new User object
                 """
+                '''
                 user = User.objects.create_user(username=username,
                                                 email=email,
                                                 password=password,
@@ -94,4 +99,5 @@ def new_user(request):
                                                 main_contract_address=main_contract_address)
                 user.save()
                 login(request, authenticate(username=username, email=email, password=password))
+                '''
     return redirect('/')
