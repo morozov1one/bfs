@@ -15,7 +15,7 @@ import os
 
 with open('solidity/tokens/infura', 'r') as file:
     os.environ['WEB3_INFURA_PROJECT_ID'] = file.read()
-
+os.environ['ADMIN_CONTRACT_ADDRESS'] = '0x3b1C4370D52692dFfbe0cFC9C2cc0935b0d0f747'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
