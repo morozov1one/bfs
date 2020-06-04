@@ -120,26 +120,32 @@ contract User {
     
     function setDeposit(address banker) public payable {
         require(checkSubs(main_address, 0));
-        Banker b = Banker(banker);
-        b.setDeposit(main_address);
+        Main m = Main(banker);
+        Banker b = Banker(m.getBankerAddress());
+        tm.send(payable(m.getOwner()));
+        b.setDeposit(main_address, msg.value);
     }
     
     function getMoneyFromDeposit(address banker) public payable {
         require(checkSubs(main_address, 0));
-        Banker b = Banker(banker);
+        Main m = Main(banker);
+        Banker b = Banker(m.getBankerAddress());
         b.getMoneyFromDeposit(main_address);
     }
     
     function askCredit(address banker, uint256 value, uint8 percent, uint64 term) public {
         require(checkSubs(main_address, 0));
-        Banker b = Banker(banker);
+        Main m = Main(banker);
+        Banker b = Banker(m.getBankerAddress());
         b.askCredit(main_address, value, percent, term);
     }
     
     function payCredit(address banker) external payable {
         require(checkSubs(main_address, 0));
-        Banker b = Banker(banker);
-        b.payCredit(main_address);
+        Main m = Main(banker);
+        Banker b = Banker(m.getBankerAddress());
+        tm.send(payable(m.getOwner()));
+        b.payCredit(main_address, msg.value);
     }
 }
 
@@ -225,12 +231,12 @@ contract Banker {
         list_of_deposits = new address payable[](0);
     }
     
-    function setDeposit(address user) external payable {
+    function setDeposit(address user, uint256 value) external payable {
         Admin admin = Admin(admin_address);
         require(!admin.checkUser(msg.sender, user));
         require(deposits[msg.sender].open == true);
         getPercents();
-        deposits[msg.sender].value += msg.value;
+        deposits[msg.sender].value += value;
     }
     
     function askCredit(address user, uint256 value, uint8 percent, uint64 term) external {
@@ -253,6 +259,7 @@ contract Banker {
         credits[client].term = term;
         credits[client].last_pay = now;
         list_of_credits.push(client);
+        tm.send(payable(client));
     }
     
     function checkOneCredit(address client) public {
@@ -270,11 +277,11 @@ contract Banker {
             checkOneCredit(list_of_credits[i]);
     }
     
-    function payCredit(address user) external payable {
+    function payCredit(address user, uint256 value) external payable {
         Admin admin = Admin(admin_address);
         require(!admin.checkUser(msg.sender, user));
         checkOneCredit(msg.sender);
-        require(msg.value >= credits[msg.sender].value);
+        require(value >= credits[msg.sender].value);
         credits[msg.sender].value = 0;
     }
 }
