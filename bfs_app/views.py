@@ -69,9 +69,15 @@ def buy_account(request):
                 tmp_contract = web3.eth.contract(address=user.main_contract_address, abi=abi.read())
             txn = tmp_contract.functions.addDays(1, int(request.POST['type'])).buildTransaction(
                 get_transaction_params(web3))
+            txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            txn_receipt = web3.eth.waitForTransactionReceipt(txn_hash)
+            if acc_type == 1:
+                user.banker_contract_address = txn_receipt['contractAddress']
+            elif acc_type == 0:
+                user.user_contract_address = txn_receipt['contractAddress']
             user.account_type = int(acc_type)
             user.save()
-            web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+
             return redirect('/')
         return HttpResponse('Wrong password')
 

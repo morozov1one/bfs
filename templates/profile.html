@@ -10,13 +10,38 @@
         sdfsdf
     {% elif user.account_type == 0 %}
         <div class="buttons">
-            <div style="display: flex;">
-                <button type="submit" class="btn btn-dark" style="display: inline-block">Отправить валюту</button>
-                <input type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
-            </div>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex;">
+                    <input hidden name="type" value="0">
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Отправить валюту</button>
+                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
+                </div>
+            </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="1">
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Создать депозит</button>
+                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя банкира или адрес его кошелька">
+                </div>
+            </form>
         </div>
     {% elif user.account_type == 1 %}
-        Banker
+        <div class="buttons">
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex;">
+                    <input hidden name="type" value="0">
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Отправить валюту</button>
+                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
+                </div>
+            </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="1">
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Приянть депозит от пользователя</button>
+                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес его кошелька">
+                </div>
+            </form>
+        </div>
     {% endif %}
 
 {% endblock %}
