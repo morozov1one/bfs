@@ -1,0 +1,20 @@
+{% load static %}
+<link href="{% static 'css/card_style.css' %}" rel="stylesheet"/>
+
+<div class="cards">
+    <div id="banker" class="card" style="margin-left: 20%; margin-right: 50px" onclick="buy_account()">
+      <img src="{% static 'images/banker.jpg' %}" alt="Avatar" style="width:100%">
+      <div class="container">
+        <h3><b>Банкир</b></h3>
+        <p>10$/месяц</p>
+      </div>
+    </div>
+
+    <div id="user" class="card" style="margin-right: 20%; margin-left: 50px">
+      <img src="{% static 'images/user.jpg' %}" alt="Avatar" style="width:100%">
+      <div class="container">
+        <h3><b>Обычный пользователь</b></h3>
+        <p>1$/месяц</p>
+      </div>
+    </div>
+</div>

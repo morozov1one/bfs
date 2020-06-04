@@ -23,5 +23,8 @@ urlpatterns = [
     path('about', about),
     path('contacts', contacts),
     path('login', login),
-    path('faq', faq)
+    path('faq', faq),
+    path('new_user', new_user),
+    path('logout', logout_view),
+    path('buy', buy)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

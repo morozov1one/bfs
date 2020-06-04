@@ -1,0 +1,1 @@
+[{"inputs":[{"internalType":"address payable","name":"recipient","type":"address"}],"name":"send","outputs":[],"stateMutability":"payable","type":"function"}]

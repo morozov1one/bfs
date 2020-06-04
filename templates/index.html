@@ -2,17 +2,24 @@
 
 {% block content %}
 
-    {% include 'login.html' %}
+    {% if not user.is_authenticated %}
+        {% include 'login.html' %}
+    {% else %}
+        {% include 'cards.html' %}
+    {% endif %}
+
 
 {% endblock %}
 
 {% block scripts %}
 
     <script>
-        const ethereumButton = document.getElementById('reg');
+        document.getElementById('banker').addEventListener('click', function foo () {
+            window.location.replace('/buy?account=banker');
+        });
 
-        ethereumButton.addEventListener('click', () => {
-            ethereum.enable();
+        document.getElementById('user').addEventListener('click', function foo () {
+           window.location.replace('/buy?account=user');
         });
     </script>
 

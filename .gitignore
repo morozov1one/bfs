@@ -1,4 +1,4 @@
 ,idea/
 /venv/
-solidity/private_key
-solidity/infura_api_token
+solidity/tokens/private_key
+solidity/tokens/infura

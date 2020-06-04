@@ -1,6 +1,7 @@
 import os
-from threading import Thread
+from threading import Thread, Event
 from time import time, sleep
+import datetime
 from web3 import Web3, HTTPProvider, eth
 import requests
 import json
@@ -14,21 +15,24 @@ def get_usd_eth():
 class UpdateSmartContract(Thread):
     def __init__(self):
         Thread.__init__(self)
-        with open('solidity/infura_api_token', 'r') as file:
-            text = file.read()
-            os.environ['WEB3_INFURA_PROJECT_ID'] = text
-            self.w3 = Web3(HTTPProvider('https://goerli.infura.io/v3/' + text))
+        with open('solidity/tokens/infura', 'r') as file:
+            self.w3 = Web3(HTTPProvider('https://goerli.infura.io/v3/' + file.read()))
         self.prices = {
             0: 1,
             1: 10,
             2: 50,
             3: 2,
         }
+        self.kill = Event()
+        if datetime.datetime.now().time() < datetime.time(12):
+            self.updated_midday = False
+        else:
+            self.updated_midday = True
 
     def update(self):
-        with open('solidity/private_key', 'r') as file:
+        with open('solidity/tokens/private_key', 'r') as file:
             private_key = file.read()
-        with open('solidity/abi', 'r') as file:
+        with open('solidity/abi/bfs_contracts_sol_Admin.abi', 'r') as file:
             abi = file.read()
         contract_address = '0x3b1C4370D52692dFfbe0cFC9C2cc0935b0d0f747'
         self.w3.eth.account = '0x0da52A47b11fFFefEf609E41FCF956b52ca9a2Ef'
@@ -49,16 +53,35 @@ class UpdateSmartContract(Thread):
 
     def run(self):
         next_time = time()
-        while True:
-            self.update()
+        while not self.kill.is_set():
+            sleep(30)
+            if datetime.datetime.now().time() >= datetime.time(12) and not self.updated_midday:
+                self.update()
+                self.updated_midday = True
+            if datetime.datetime.now().time() < datetime.time(12) and self.updated_midday:
+                self.update()
+                self.updated_midday = False
+
+            """
             next_time += 12 * 60 * 60
             sleep_time = next_time - time()
             if sleep_time > 0:
                 sleep(sleep_time)
+            """
+
+
+t = UpdateSmartContract()
 
 
 def start_thread():
     """
-        Start infinite loop in second thread for updating Admin smart-contract every 12 hours
+        Start infinite loop in a thread for updating Admin smart-contract every 12 hours
     """
-    UpdateSmartContract().start()
+    global t
+    t.start()
+
+
+def stop_thread():
+    global t
+    t.kill.set()
+    t.join()

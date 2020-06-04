@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+
+with open('solidity/tokens/infura', 'r') as file:
+    os.environ['WEB3_INFURA_PROJECT_ID'] = file.read()
+os.environ['ADMIN_CONTRACT_ADDRESS'] = '0x3b1C4370D52692dFfbe0cFC9C2cc0935b0d0f747'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,7 +29,7 @@ SECRET_KEY = '(m1&x2+(z$sj0$#xg(f87idcww8@@udwqs6*y10!it^q-3w+fx'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -35,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bfs_app'
+    'bfs_app',
 ]
 
 MIDDLEWARE = [

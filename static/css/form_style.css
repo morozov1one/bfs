@@ -4,7 +4,7 @@ form {
 }
 
 .login-box {
-    margin-top: 75px;
+    margin-top: 10px;
     height: auto;
     background: #1A2226;
     text-align: center;
@@ -32,6 +32,19 @@ form {
 .login-form {
     margin-top: 25px;
     text-align: left;
+}
+
+input[readonly] {
+    background-color: #1A2226 !important;
+    border: none !important;
+    border-bottom: 2px solid #0DB8DE !important;
+    border-top: 0px;
+    border-radius: 0px;
+    font-weight: bold;
+    outline: 0;
+    margin-bottom: 20px;
+    padding-left: 0px;
+    color: #ECF0F5 !important;
 }
 
 input[type=text] {
@@ -74,7 +87,7 @@ input[type=password] {
 }
 
 .form-group {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     outline: 0px;
 }
 
