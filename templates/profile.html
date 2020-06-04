@@ -1,0 +1,13 @@
+{% extends 'patterns/base.html' %}
+
+{% block content %}
+
+    {% if user.account_type is None %}
+        None
+    {% elif user.account_type == 0 %}
+        User
+    {% elif user.account_type == 1 %}
+        Banker
+    {% endif %}
+
+{% endblock %}

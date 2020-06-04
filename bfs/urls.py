@@ -26,5 +26,6 @@ urlpatterns = [
     path('faq', faq),
     path('new_user', new_user),
     path('logout', logout_view),
-    path('buy', buy)
+    path('buy', buy_account),
+    path('profile', profile)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
