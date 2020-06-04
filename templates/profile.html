@@ -1,11 +1,20 @@
 {% extends 'patterns/base.html' %}
 
 {% block content %}
+    <style>
+    input::placeholder{
 
-    {% if user.account_type is None %}
-        None
+    }
+    </style>
+    {% if user.account_type == None %}
+        sdfsdf
     {% elif user.account_type == 0 %}
-        User
+        <div class="buttons">
+            <div style="display: flex;">
+                <button type="submit" class="btn btn-dark" style="display: inline-block">Отправить валюту</button>
+                <input type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
+            </div>
+        </div>
     {% elif user.account_type == 1 %}
         Banker
     {% endif %}

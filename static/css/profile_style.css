@@ -1,0 +1,8 @@
+.buttons {
+    margin-left: 10%;
+    font-size: 30px;
+}
+
+.call_function_button {
+    display: flex;
+}

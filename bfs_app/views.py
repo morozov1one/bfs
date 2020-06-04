@@ -50,6 +50,11 @@ def profile(request):
 
 
 @login_required()
+def call_contract_function(request):
+    pass
+
+
+@login_required()
 def buy_account(request):
     if request.method == 'GET':
         return render(request, 'buy.html', {'account': request.GET.get('account', None), 'user': request.user})
