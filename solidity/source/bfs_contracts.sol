@@ -1,6 +1,6 @@
 pragma solidity >=0.6.0 <= 0.6.8;
 
-import "github.com/morozov1one/bfs/blob/master/solidity/Admin.sol";
+import "github.com/morozov1one/bfs/blob/master/solidity/source/Admin.sol";
 
 contract Transfer_money {
     function send(address payable recipient) external payable {
