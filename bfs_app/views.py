@@ -45,7 +45,12 @@ def logout_view(request):
 
 
 @login_required()
-def buy(request):
+def profile(request):
+    return render(request, 'profile.html', {'user': User.objects.get(username=request.user)})
+
+
+@login_required()
+def buy_account(request):
     if request.method == 'GET':
         return render(request, 'buy.html', {'account': request.GET.get('account', None), 'user': request.user})
     elif request.method == 'POST':
@@ -53,12 +58,17 @@ def buy(request):
         user = User.objects.get(username=username)
         if user.check_password(password):
             web3 = connect_to_infura()
-            private_key = web3.eth.account.decrypt(keyfile_json=json.loads(user.keystore), password=password)
+            private_key = web3.eth.account.decrypt(keyfile_json=user.keystore, password=password)
+            web3.eth.account = web3.eth.account.privateKeyToAccount(private_key).address
             with open('solidity/abi/bfs_contracts_sol_Main.abi', 'r') as abi:
                 tmp_contract = web3.eth.contract(address=user.main_contract_address, abi=abi.read())
             txn = tmp_contract.functions.addDays(1, int(request.POST['type'])).buildTransaction(
                 get_transaction_params(web3))
+            user.account_type = int(acc_type)
+            user.save()
             web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            return redirect('/')
+        return HttpResponse('Wrong password')
 
 
 def new_user(request):
@@ -116,7 +126,7 @@ def new_user(request):
                 user = User.objects.create_user(username=username,
                                                 email=email,
                                                 password=password,
-                                                keystore=str(keystore),
+                                                keystore=json.dumps(keystore),
                                                 main_contract_address=main_contract_address)
                 user.save()
                 login(request, authenticate(username=username, email=email, password=password))
