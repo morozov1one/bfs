@@ -156,7 +156,7 @@ def new_user(request):
                 txn = tmp_contract.constructor().buildTransaction(get_transaction_params(web3))
                 txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
                 main_contract_address = web3.eth.waitForTransactionReceipt(txn_hash)['contractAddress']
-
+                print(main_contract_address);
                 """
                     Call createProfile() function from Main contract
                 """

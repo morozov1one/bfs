@@ -277,6 +277,12 @@ contract Banker {
             checkOneCredit(list_of_credits[i]);
     }
     
+    function howMuchCredit(address client) public returns(uint256) {
+        require(credits[msg.sender].value > 0);
+        checkOneCredit(client);
+        return credits[client].value;
+    }
+    
     function payCredit(address user, uint256 value) external payable {
         Admin admin = Admin(admin_address);
         require(!admin.checkUser(msg.sender, user));
