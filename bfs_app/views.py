@@ -16,7 +16,7 @@ def get_transaction_params(web3, value=0):
         'gas': 4000000,
         'gasPrice': 25000000,
         'nonce': web3.eth.getTransactionCount(web3.eth.account, 'pending'),
-        'value': int(1.1 * value)
+        'value': value
     }
 
 
@@ -56,25 +56,50 @@ def call_contract_function(request):
     if request.method == 'POST':
         function_type = request.POST['type']
         user = User.objects.get(username=request.user.username)
+        _id, password = request.POST['id'], request.POST['id']
+        if len(_id) < 42:
+            _id = User.objects.get(username=_id).address
+        if not user.check_password(password):
+            return HttpResponse('Wrong password!')
         web3 = connect_to_infura()
+        private_key = web3.eth.account.decrypt(keyfile_json=user.keystore, password=password)
         web3.eth.account = user.address
-        _id = request.POST['id']
         if user.account_type == 0:
             if function_type == '0':
-                pass
+                amount = request.POST['amount']
+                web3.eth.sendTransaction({'to': _id, 'from': web3.eth.account, 'value': amount * 10 ** 18})
             elif function_type == '1':
-                pass
+                amount = request.POST['amount']
+                with open('solidity/abi/bfs_contracts_sol_User.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.user_contract_address, abi=abi.read())
+                txn = tmp_contract.functions.setDeposit(
+                    User.objects.get(address=_id).main_contract_address).buildTransaction(
+                    get_transaction_params(web3, amount * 10 ** 18))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            elif function_type == '2':
+                with open('solidity/abi/bfs_contracts_sol_User.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.user_contract_address, abi=abi.read())
+                txn = tmp_contract.functions.getMoneyFromDeposit(
+                    User.objects.get(address=_id).main_contract_address).buildTransaction(
+                    get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
         elif user.account_type == 1:
             if function_type == '0':
-                pass
+                amount = request.POST['amount']
+                web3.eth.sendTransaction({'to': _id, 'from': web3.eth.account, 'value': amount * 10 ** 18})
             elif function_type == '1':
                 percent, time = request.POST['percent'], request.POST['time']
                 with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
                     tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
-                txn = tmp_contract.functions.getDeposit(_id, percent, time).buildTransaction(get_transaction_params(web3))
-                #web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+                txn = tmp_contract.functions.getDeposit(_id, percent, time).buildTransaction(
+                    get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
             elif function_type == '2':
-                pass
+                with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
+                txn = tmp_contract.functions.returnMoney().buildTransaction(
+                    get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
 
 
 @login_required()
@@ -90,9 +115,9 @@ def buy_account(request):
             web3.eth.account = web3.eth.account.privateKeyToAccount(private_key).address
             with open('solidity/abi/bfs_contracts_sol_Main.abi', 'r') as abi:
                 tmp_contract = web3.eth.contract(address=user.main_contract_address, abi=abi.read())
-            print(int(get_usd_eth() * 10 ** 18 if acc_type == '0' else get_usd_eth() * 10 ** 19))
             txn = tmp_contract.functions.addDays(1, int(request.POST['type'])).buildTransaction(
-                get_transaction_params(web3, get_usd_eth() * 10 ** 18 if acc_type == '0' else get_usd_eth() * 10 ** 19))
+                get_transaction_params(web3, int(1.1 * get_usd_eth() * 10 ** 18) if acc_type == '0' else int(
+                    1.1 * get_usd_eth() * 10 ** 19)))
             txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
             web3.eth.waitForTransactionReceipt(txn_hash)
             user.account_type = int(acc_type)

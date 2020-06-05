@@ -5,6 +5,9 @@
     input::placeholder{
         font-size: 20px;
     }
+    .toggle {
+        display: none;
+    }
     </style>
     {% if user.account_type == None %}
         <h1>None</h1>
@@ -13,31 +16,41 @@
             <form method="post"> {% csrf_token %}
                 <div style="display: flex;">
                     <input hidden name="type" value="0">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Отправить валюту</button>
-                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Отправить валюту</button>
+                    <input name="id" type="text" style="display: inline-block; width: 25%;" placeholder="Имя пользователя или адрес кошелька">
+                    <input name="amount" type="text" style="display: inline-block; width: 25%;" placeholder="Количество ETH">
                 </div>
             </form>
             <form method="post"> {% csrf_token %}
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="1">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Создать депозит</button>
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Создать депозит</button>
+                    <input name="id" type="text" style="display: inline-block; width: 25%;" placeholder="Имя банкира или адрес его кошелька">
+                    <input name="amount" type="text" style="display: inline-block; width: 25%;" placeholder="Количество ETH">
+                </div>
+            </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="2">
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Запросить деньги с депозита у банкира</button>
                     <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя банкира или адрес его кошелька">
                 </div>
             </form>
         </div>
+        <input id="passwordForm" name="password" type="password" style="display: none">
     {% elif user.account_type == 1 %}
         <div class="buttons">
             <form method="post"> {% csrf_token %}
                 <div style="display: flex;">
                     <input hidden name="type" value="0">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Отправить валюту</button>
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Отправить валюту</button>
                     <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
                 </div>
             </form>
             <form method="post"> {% csrf_token %}
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="1">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Открыть депозит пользователю</button>
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Открыть депозит пользователю</button>
                     <input name="id" type="text" style="display: inline-block; width: 20%;" placeholder="Имя пользователя или адрес кошелька">
                     <input name="percent" type="text" style="display: inline-block; width: 15%;" placeholder="Процент депозита">
                     <input name="time" type="text" style="display: inline-block; width: 15%;" placeholder="Срок начисления процентов">
@@ -46,11 +59,42 @@
             <form method="post"> {% csrf_token %}
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="2">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Приянть депозит от пользователя</button>
-                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Вернуть депозиты на все запросы</button>
                 </div>
             </form>
         </div>
+        <div id="passwordForm" style="display: none; margin-left: 20%">
+            <label>PASSWORD</label>
+            <input id="password" name="password" type="password">
+            <button id="confirmButton" type="button">Подтвердить</button>
+        </div>
     {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const allElem = document.querySelectorAll('.buttons');
+        const passwordForm = document.getElementById('passwordForm');
+
+        document.addEventListener("click", function(e) {
+            if (e.target.classList.contains('btn-dark')) {
+                for (var i = 0; i < allElem.length; i++) {
+                    allElem[i].classList.toggle('toggle');
+                }
+                passwordForm.style.display = 'block';
+                const confirmButton = document.getElementById('confirmButton');
+
+                confirmButton.addEventListener("click", function () {
+                    const request = new XMLHttpRequest();
+                    const data = new FormData(e.target.parentNode.parentNode);
+                    data.append('password', document.getElementById('password').value);
+                    request.open('POST', '/call', false);
+                    request.send(data);
+                    location.reload();
+                    return false;
+                });
+            }
+        });
+    </script>
 {% endblock %}
