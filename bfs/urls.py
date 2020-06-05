@@ -22,11 +22,11 @@ urlpatterns = [
     path('', index),
     path('about', about),
     path('contacts', contacts),
-    path('login', login),
     path('faq', faq),
     path('new_user', new_user),
     path('logout', logout_view),
     path('buy', buy_account),
     path('profile', profile),
-    path('call', call_contract_function)
+    path('call', call_contract_function),
+    path('login', login_page)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

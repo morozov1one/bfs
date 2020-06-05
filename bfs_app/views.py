@@ -13,7 +13,7 @@ from infinite_loop_thread import get_usd_eth
 def get_transaction_params(web3, value=0):
     return {
         'chainId': 5,
-        'gas': 4000000,
+        'gas': 8000000,
         'gasPrice': 25000000,
         'nonce': web3.eth.getTransactionCount(web3.eth.account, 'pending'),
         'value': value
@@ -46,6 +46,15 @@ def logout_view(request):
     return redirect('/')
 
 
+def login_page(request):
+    print(request.method)
+    if request.method == 'GET':
+        return render(request, 'login2.html')
+    username, password = request.POST['username'], request.POST['password']
+    login(request, authenticate(username=username, email=username, password=password))
+    return redirect('/')
+
+
 @login_required()
 def profile(request):
     return render(request, 'profile.html', {'user': User.objects.get(username=request.user)})
@@ -56,19 +65,23 @@ def call_contract_function(request):
     if request.method == 'POST':
         function_type = request.POST['type']
         user = User.objects.get(username=request.user.username)
-        _id, password = request.POST['id'], request.POST['id']
+        print(user.username)
+        _id, password = request.POST['id'], request.POST['password']
         if len(_id) < 42:
             _id = User.objects.get(username=_id).address
+        print(user.check_password(password))
         if not user.check_password(password):
             return HttpResponse('Wrong password!')
         web3 = connect_to_infura()
         private_key = web3.eth.account.decrypt(keyfile_json=user.keystore, password=password)
-        web3.eth.account = user.address
+        web3.eth.account = web3.eth.account.privateKeyToAccount(private_key)
+        print(user.account_type, type(user.account_type))
         if user.account_type == 0:
             if function_type == '0':
                 amount = request.POST['amount']
-                web3.eth.sendTransaction({'to': _id, 'from': web3.eth.account, 'value': amount * 10 ** 18})
+                web3.eth.sendTransaction({'to': _id, 'from': web3.eth.account.address, 'value': amount * 10 ** 18})
             elif function_type == '1':
+                print('Here')
                 amount = request.POST['amount']
                 with open('solidity/abi/bfs_contracts_sol_User.abi', 'r') as abi:
                     tmp_contract = web3.eth.contract(address=user.user_contract_address, abi=abi.read())
@@ -101,12 +114,15 @@ def call_contract_function(request):
         elif user.account_type == 1:
             if function_type == '0':
                 amount = request.POST['amount']
-                web3.eth.sendTransaction({'to': _id, 'from': web3.eth.account, 'value': amount * 10 ** 18})
+                web3.eth.sendTransaction({'to': _id, 'from': web3.eth.account.address, 'value': amount * 10 ** 18})
             elif function_type == '1':
+                print('HERE')
                 percent, time = request.POST['percent'], request.POST['time']
                 with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
                     tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
-                txn = tmp_contract.functions.getDeposit(_id, percent, time).buildTransaction(
+                print(_id)
+                print(web3.eth.account.address)
+                txn = tmp_contract.functions.getDeposit(_id, int(percent), int(time)).buildTransaction(
                     get_transaction_params(web3))
                 web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
             elif function_type == '2':
@@ -119,9 +135,10 @@ def call_contract_function(request):
                 amount, percent, time = request.POST['amount'], request.POST['percent'], request.POST['time']
                 with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
                     tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
-                txn = tmp_contract.functions.getDeposit(_id, amount, percent, time).buildTransaction(
+                txn = tmp_contract.functions.getCredit(_id, int(amount), int(percent), int(time)).buildTransaction(
                     get_transaction_params(web3))
                 web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+    return redirect('/profile')
 
 
 @login_required()
@@ -178,7 +195,7 @@ def new_user(request):
                 txn = tmp_contract.constructor().buildTransaction(get_transaction_params(web3))
                 txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
                 main_contract_address = web3.eth.waitForTransactionReceipt(txn_hash)['contractAddress']
-
+                print(main_contract_address)
                 """
                     Call createProfile() function from Main contract
                 """

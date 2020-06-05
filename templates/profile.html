@@ -24,7 +24,7 @@
             <form method="post"> {% csrf_token %}
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="1">
-                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Создать депозит</button>
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Положить деньги на депозит</button>
                     <input name="id" type="text" style="display: inline-block; width: 25%;" placeholder="Имя банкира или адрес его кошелька">
                     <input name="amount" type="text" style="display: inline-block; width: 25%;" placeholder="Количество ETH">
                 </div>
@@ -54,7 +54,11 @@
                 </div>
             </form>
         </div>
-        <input id="passwordForm" name="password" type="password" style="display: none">
+        <div id="passwordForm" style="display: none; margin-left: 20%">
+            <label>PASSWORD</label>
+            <input id="password" name="password" type="password">
+            <button id="confirmButton" type="button">Подтвердить</button>
+        </div>
 
     {% elif user.account_type == 1 %}
         <div class="buttons">
