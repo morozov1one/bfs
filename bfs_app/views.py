@@ -92,7 +92,12 @@ def call_contract_function(request):
                     .buildTransaction(get_transaction_params(web3))
                 web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
             elif function_type == '4':
-                pass
+                with open('solidity/abi/bfs_contracts_sol_User.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.user_contract_address, abi=abi.read())
+                with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
+                    amount = web3.eth.contract(address=User.objects.get(address=_id).main_contract_address, abi=abi.read()).functions.howMuchCredit(user.address).call()
+                txn = tmp_contract.functions.payCredit().buildTransaction(get_transaction_params(web3, amount))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
         elif user.account_type == 1:
             if function_type == '0':
                 amount = request.POST['amount']
@@ -108,6 +113,13 @@ def call_contract_function(request):
                 with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
                     tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
                 txn = tmp_contract.functions.returnMoney().buildTransaction(
+                    get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            elif function_type == '3':
+                amount, percent, time = request.POST['amount'], request.POST['percent'], request.POST['time']
+                with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
+                txn = tmp_contract.functions.getDeposit(_id, amount, percent, time).buildTransaction(
                     get_transaction_params(web3))
                 web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
 
