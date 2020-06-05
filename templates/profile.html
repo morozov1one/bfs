@@ -3,24 +3,24 @@
 {% block content %}
     <style>
     input::placeholder{
-
+        font-size: 20px;
     }
     </style>
     {% if user.account_type == None %}
-        sdfsdf
+        <h1>None</h1>
     {% elif user.account_type == 0 %}
         <div class="buttons">
             <form method="post"> {% csrf_token %}
                 <div style="display: flex;">
                     <input hidden name="type" value="0">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Отправить валюту</button>
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Отправить валюту</button>
                     <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
                 </div>
             </form>
             <form method="post"> {% csrf_token %}
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="1">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Создать депозит</button>
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Создать депозит</button>
                     <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя банкира или адрес его кошелька">
                 </div>
             </form>
@@ -30,15 +30,24 @@
             <form method="post"> {% csrf_token %}
                 <div style="display: flex;">
                     <input hidden name="type" value="0">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Отправить валюту</button>
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Отправить валюту</button>
                     <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
                 </div>
             </form>
             <form method="post"> {% csrf_token %}
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="1">
-                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 10%">Приянть депозит от пользователя</button>
-                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес его кошелька">
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Открыть депозит пользователю</button>
+                    <input name="id" type="text" style="display: inline-block; width: 20%;" placeholder="Имя пользователя или адрес кошелька">
+                    <input name="percent" type="text" style="display: inline-block; width: 15%;" placeholder="Процент депозита">
+                    <input name="time" type="text" style="display: inline-block; width: 15%;" placeholder="Срок начисления процентов">
+                </div>
+            </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="2">
+                    <button type="submit" class="btn btn-dark" style="display: inline-block; min-width: 20%">Приянть депозит от пользователя</button>
+                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя пользователя или адрес кошелька">
                 </div>
             </form>
         </div>

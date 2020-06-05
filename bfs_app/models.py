@@ -6,6 +6,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=32, unique=True)
     email = models.EmailField(unique=True)
     keystore = models.CharField(max_length=1000, unique=True)
+    address = models.CharField(max_length=50, unique=True, default=None)
     main_contract_address = models.CharField(max_length=50, unique=True)
     user_contract_address = models.CharField(max_length=50, unique=True, default=None, null=True)
     banker_contract_address = models.CharField(max_length=50, unique=True, default=None, null=True)

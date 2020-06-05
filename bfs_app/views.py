@@ -7,14 +7,16 @@ from bfs_app.models import *
 from web3 import Web3, eth
 import json
 import os
+from infinite_loop_thread import get_usd_eth
 
 
-def get_transaction_params(web3):
+def get_transaction_params(web3, value=0):
     return {
         'chainId': 5,
         'gas': 4000000,
         'gasPrice': 25000000,
         'nonce': web3.eth.getTransactionCount(web3.eth.account, 'pending'),
+        'value': int(1.1 * value)
     }
 
 
@@ -51,7 +53,28 @@ def profile(request):
 
 @login_required()
 def call_contract_function(request):
-    pass
+    if request.method == 'POST':
+        function_type = request.POST['type']
+        user = User.objects.get(username=request.user.username)
+        web3 = connect_to_infura()
+        web3.eth.account = user.address
+        _id = request.POST['id']
+        if user.account_type == 0:
+            if function_type == '0':
+                pass
+            elif function_type == '1':
+                pass
+        elif user.account_type == 1:
+            if function_type == '0':
+                pass
+            elif function_type == '1':
+                percent, time = request.POST['percent'], request.POST['time']
+                with open('solidity/abi/bfs_contracts_sol_Banker.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.banker_contract_address, abi=abi.read())
+                txn = tmp_contract.functions.getDeposit(_id, percent, time).buildTransaction(get_transaction_params(web3))
+                #web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            elif function_type == '2':
+                pass
 
 
 @login_required()
@@ -67,14 +90,11 @@ def buy_account(request):
             web3.eth.account = web3.eth.account.privateKeyToAccount(private_key).address
             with open('solidity/abi/bfs_contracts_sol_Main.abi', 'r') as abi:
                 tmp_contract = web3.eth.contract(address=user.main_contract_address, abi=abi.read())
+            print(int(get_usd_eth() * 10 ** 18 if acc_type == '0' else get_usd_eth() * 10 ** 19))
             txn = tmp_contract.functions.addDays(1, int(request.POST['type'])).buildTransaction(
-                get_transaction_params(web3))
+                get_transaction_params(web3, get_usd_eth() * 10 ** 18 if acc_type == '0' else get_usd_eth() * 10 ** 19))
             txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
-            txn_receipt = web3.eth.waitForTransactionReceipt(txn_hash)
-            if acc_type == 1:
-                user.banker_contract_address = txn_receipt['contractAddress']
-            elif acc_type == 0:
-                user.user_contract_address = txn_receipt['contractAddress']
+            web3.eth.waitForTransactionReceipt(txn_hash)
             user.account_type = int(acc_type)
             user.save()
 
@@ -117,7 +137,14 @@ def new_user(request):
                 """
                 tmp_contract = web3.eth.contract(abi=abi, address=main_contract_address)
                 txn = tmp_contract.functions.createProfiles().buildTransaction(get_transaction_params(web3))
-                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+                web3.eth.waitForTransactionReceipt(
+                    web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction))
+
+                """
+                    Get addresses of User and Banker contracts
+                """
+                banker_contract_address = tmp_contract.functions.getBankerAddress().call()
+                user_contract_address = tmp_contract.functions.getUserAddress().call()
 
                 """
                     Send 2 overridden setUserAddress() functions of Admin contract
@@ -138,7 +165,10 @@ def new_user(request):
                                                 email=email,
                                                 password=password,
                                                 keystore=json.dumps(keystore),
-                                                main_contract_address=main_contract_address)
+                                                address=web3.eth.account,
+                                                main_contract_address=main_contract_address,
+                                                user_contract_address=user_contract_address,
+                                                banker_contract_address=banker_contract_address)
                 user.save()
                 login(request, authenticate(username=username, email=email, password=password))
                 return redirect('/')
