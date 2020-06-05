@@ -83,6 +83,16 @@ def call_contract_function(request):
                     User.objects.get(address=_id).main_contract_address).buildTransaction(
                     get_transaction_params(web3))
                 web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            elif function_type == '3':
+                amount, percent, time = request.POST['amount'], request.POST['percent'], request.POST['time']
+                with open('solidity/abi/bfs_contracts_sol_User.abi', 'r') as abi:
+                    tmp_contract = web3.eth.contract(address=user.user_contract_address, abi=abi.read())
+                txn = tmp_contract.functions.askCredit(
+                    User.objects.get(address=_id).main_contract_address, amount * 10 ** 18, percent, time)\
+                    .buildTransaction(get_transaction_params(web3))
+                web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
+            elif function_type == '4':
+                pass
         elif user.account_type == 1:
             if function_type == '0':
                 amount = request.POST['amount']
@@ -148,7 +158,7 @@ def new_user(request):
                 keystore = web3.eth.account.encrypt(private_key=private_key, password=password)
 
                 web3.eth.account = eth.Account.privateKeyToAccount(private_key=private_key).address
-
+                address = web3.eth.account
                 """
                     Deploy Main contract
                 """
@@ -156,7 +166,7 @@ def new_user(request):
                 txn = tmp_contract.constructor().buildTransaction(get_transaction_params(web3))
                 txn_hash = web3.eth.sendRawTransaction(eth.Account.sign_transaction(txn, private_key).rawTransaction)
                 main_contract_address = web3.eth.waitForTransactionReceipt(txn_hash)['contractAddress']
-
+                print(main_contract_address)
                 """
                     Call createProfile() function from Main contract
                 """
@@ -190,7 +200,7 @@ def new_user(request):
                                                 email=email,
                                                 password=password,
                                                 keystore=json.dumps(keystore),
-                                                address=web3.eth.account,
+                                                address=address,
                                                 main_contract_address=main_contract_address,
                                                 user_contract_address=user_contract_address,
                                                 banker_contract_address=banker_contract_address)

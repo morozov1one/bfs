@@ -10,7 +10,7 @@
     }
     </style>
     {% if user.account_type == None %}
-        <h1>None</h1>
+        <h1>Купите подписку</h1>
     {% elif user.account_type == 0 %}
         <div class="buttons">
             <form method="post"> {% csrf_token %}
@@ -36,8 +36,26 @@
                     <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя банкира или адрес его кошелька">
                 </div>
             </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="3">
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Запросить кредит у банкира</button>
+                    <input name="id" type="text" style="display: inline-block; width: 14%;" placeholder="Имя банкира или адрес его кошелька">
+                    <input name="amount" type="text" style="display: inline-block; width: 12%;" placeholder="Сумма">
+                    <input name="percent" type="text" style="display: inline-block; width: 12%;" placeholder="Процент">
+                    <input name="time" type="text" style="display: inline-block; width: 12%;" placeholder="Срок">
+                </div>
+            </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="4">
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Вернуть кредит</button>
+                    <input name="id" type="text" style="display: inline-block; width: 50%;" placeholder="Имя банкира или адрес его кошелька">
+                </div>
+            </form>
         </div>
         <input id="passwordForm" name="password" type="password" style="display: none">
+
     {% elif user.account_type == 1 %}
         <div class="buttons">
             <form method="post"> {% csrf_token %}
@@ -60,6 +78,13 @@
                 <div style="display: flex; margin-top: 30px">
                     <input hidden name="type" value="2">
                     <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Вернуть депозиты на все запросы</button>
+                </div>
+            </form>
+            <form method="post"> {% csrf_token %}
+                <div style="display: flex; margin-top: 30px">
+                    <input hidden name="type" value="3">
+                    <button type="button" class="btn btn-dark" style="display: inline-block; min-width: 20%">Одобрить кредит</button>
+                    <input name="id" type="text" style="display: inline-block; width: 20%;" placeholder="Имя пользователя или адрес кошелька">
                 </div>
             </form>
         </div>
