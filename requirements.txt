@@ -9,7 +9,7 @@ cffi==1.14.0
 chardet==3.0.4
 coincurve==13.0.0
 cytoolz==0.10.1
-Django==3.0.6
+Django==3.0.14
 eth-abi==2.1.1
 eth-account==0.5.2
 eth-hash==0.2.0
