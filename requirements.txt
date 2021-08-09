@@ -39,7 +39,7 @@ pypiwin32==223
 pyrsistent==0.16.0
 pysha3==1.0.2
 pytz==2020.1
-pywin32==227
+pywin32==301
 PyYAML==5.3.1
 repoze.lru==0.7
 requests==2.23.0
